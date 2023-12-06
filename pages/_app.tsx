@@ -6,7 +6,9 @@ import { Inter } from '@next/font/google'
 import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { DehydratedState } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { chain, configureChains, createClient, WagmiConfig } from 'wagmi'
+import { avalanche, avalancheFuji } from 'wagmi/chains'
+import { publicProvider } from 'wagmi/providers/public'
+import { configureChains, createClient, WagmiConfig } from 'wagmi'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, lightTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { injectedWallet, rainbowWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
@@ -21,33 +23,14 @@ import { TransactionsContext } from '~/contexts'
 const inter = Inter({ subsets: ['latin'] })
 
 const { chains, provider } = configureChains(
-	[chain.mainnet, chain.goerli],
-	[
-		jsonRpcProvider({
-			rpc: (chain) => {
-				if (chain.id === 1) {
-					return { http: CHAINS_CONFIGURATION[1].rpcUrl }
-				} else if (chain.id === 5) {
-					return { http: CHAINS_CONFIGURATION[5].rpcUrl }
-				} else return { http: chain.rpcUrls.default }
-			}
-		})
-	]
+	[avalanche, avalancheFuji],
+	[publicProvider()]
 )
 
 const connectors = connectorsForWallets([
 	{
 		groupName: 'Popular',
 		wallets: [
-			{
-				id: 'safe',
-				name: 'Gnosis Safe',
-				iconUrl: '/assets/gnosis.png',
-				iconBackground: '#fff',
-				createConnector: () => {
-					return { connector: new SafeConnector({ chains }) }
-				}
-			},
 			injectedWallet({ chains }),
 			metaMaskWallet({ chains }),
 			rainbowWallet({ chains }),
@@ -82,7 +65,7 @@ function MyApp({ Component, pageProps }: AppProps<{ dehydratedState: DehydratedS
 							fontStack: 'system'
 						})}
 						chains={chains}
-						initialChain={chain.mainnet}
+						initialChain={avalanche}
 						showRecentTransactions={true}
 						modalSize="compact"
 					>
